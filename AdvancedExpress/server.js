@@ -11,15 +11,18 @@ app.get('/health', (request, response) => {
 const users = [
   {
     id: 1,
-    email: 'sapta1@gmail.com'
+    email: 'sapta1@gmail.com',
+    userName: 'SaptaDEv27'
   },
   {
     id: 2,
-    email: 'sapta2@gmail.com'
+    email: 'sapta2@gmail.com',
+    userName: 'Anuska2027'
   },
   {
     id: 3,
-    email: 'sapta3@gmail.com'
+    email: 'sapta3@gmail.com',
+    userName: 'Anurshi27'
   },
 ]
 
@@ -81,6 +84,32 @@ app.get('/products/:id', (request, response) => {
     message: 'Fetched Product successfully',
     product_fetched_from_db: fetchedProduct
   })
+})
+
+app.get('/users/query', (request, response) => {
+  console.log(request.query);
+  const { filter, value } = request.query;
+  if (!filter && !value) {
+    return response.status(400).json({
+      success: false,
+      message: 'Query parameters are missing !!'
+    })
+  }
+  if (filter && value) {
+    const filteredUsers = users.filter((user) => user[filter] == value);
+    if (filteredUsers.length == 0) {
+      return response.status(200).json({
+        success: true,
+        message: 'No such record found from DB'
+      })
+    }
+    return response.status(200).json({
+      success: true,
+      message: 'Records filtered successfully',
+      data: filteredUsers
+    })
+  }
+
 })
 
 
