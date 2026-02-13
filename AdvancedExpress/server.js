@@ -1,6 +1,10 @@
+import e from 'express';
 import express from 'express';
 const PORT = 8001
 const app = express(); // invoke the app 
+
+
+app.use(express.json())
 
 //health check route
 app.get('/health', (request, response) => {
@@ -86,6 +90,8 @@ app.get('/products/:id', (request, response) => {
   })
 })
 
+
+//Query Parameters //
 app.get('/users/query', (request, response) => {
   console.log(request.query);
   const { filter, value } = request.query;
@@ -112,8 +118,33 @@ app.get('/users/query', (request, response) => {
 
 })
 
+app.post('/api/users/create', (request, response) => {
+  const { userName, email } = request.body;
+  if (!userName || !email) {
+    return response.status(400).json({
+      success: false,
+      message: 'UserName or Email Field is missing !!'
+    })
+  }
+  const createUser = {
+    id: users.length + 1,
+    userName: userName,
+    email: email
+  }
+  const newUser = users.push(createUser);
+  if(newUser){
+    return response.status(200).json({
+      success : true ,
+      message : 'New User is created successfully !!' ,
+      newUser : createUser
+    })
+  }
+})
 
-/*'GET' request : 1st parameter : /health => route ;  2nd Parameter : () => {} // callback function  ; (request , response) :
+
+
+/*
+'GET' request : 1st parameter : /health => route ;  2nd Parameter : () => {} // callback function  ; (request , response) :
 request object => gets the Headers from client side from req.headers , gets the IP addreess , gets the data from client side from req.body
 and response is a object that takes the data from the server side ( maybe database) and returns it to client side ( maybe JSON , TEXT , HTML)
 */
