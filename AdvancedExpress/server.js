@@ -1,4 +1,4 @@
-import e from 'express';
+import e, { request } from 'express';
 import express from 'express';
 const PORT = 8001
 const app = express(); // invoke the app 
@@ -118,6 +118,8 @@ app.get('/users/query', (request, response) => {
 
 })
 
+
+// POST Request //
 app.post('/api/users/create', (request, response) => {
   const { userName, email } = request.body;
   if (!userName || !email) {
@@ -132,16 +134,69 @@ app.post('/api/users/create', (request, response) => {
     email: email
   }
   const newUser = users.push(createUser);
-  if(newUser){
+  if (newUser) {
     return response.status(200).json({
-      success : true ,
-      message : 'New User is created successfully !!' ,
-      newUser : createUser
+      success: true,
+      message: 'New User is created successfully !!',
+      newUser: createUser
     })
   }
 })
 
+// PUT Request // 
+/* PUT REQUEST => In case of PUT request , we are trying to update a document , it updates all the fields of the documents . If we not provide the new data of the fields , then it removes those fields  */
 
+app.put('/api/users/update/:id', (request, response) => {
+  const { id } = request.params;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return response.status(400).json({
+      success: false,
+      message: 'Bad Request from Client Side !!. Pls check the ID sent '
+    })
+  }
+  const findUser = users.findIndex((user) => user.id === parsedId);
+  if (findUser == -1) {
+    return response.status(404).json({
+      success: false,
+      message: 'User not Found !! . Pls check the User details correctly'
+    })
+  }
+  const { body } = request;
+  users[findUser] = { id: parsedId, ...body };
+  return response.status(200).json({
+    success: true,
+    message: 'Record Updated successfully',
+    data: users[findUser]
+  })
+})
+
+/*Patch Request : In  case of Patch Request  : We only update the fields that are required to  be updated from the client side */
+
+app.patch('/api/users/update/:id', (request, response) => {
+  const { id } = request.params;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return response.status(400).json({
+      success: false,
+      message: 'Bad Request . Pls check the ID sent !!'
+    })
+  }
+  const findUser = users.findIndex((user) => user.id === parsedId);
+  if (findUser == -1) {
+    return response.status(404).json({
+      success: false,
+      messsage: 'User Not Found . Pls provide the correct details !!'
+    })
+  }
+  const body = request.body;
+  users[findUser] = {...users[findUser] , ...body}
+  return response.status(200).json({
+    success : true ,
+    message : 'Record is updated successfullly !!' ,
+    updatedUser : users[findUser]
+  })
+})
 
 /*
 'GET' request : 1st parameter : /health => route ;  2nd Parameter : () => {} // callback function  ; (request , response) :
