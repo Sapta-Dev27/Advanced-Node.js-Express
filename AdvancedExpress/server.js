@@ -1,4 +1,4 @@
-import e, { request } from 'express';
+import  { request } from 'express';
 import express from 'express';
 const PORT = 8001
 const app = express(); // invoke the app 
@@ -197,6 +197,41 @@ app.patch('/api/users/update/:id', (request, response) => {
     updatedUser : users[findUser]
   })
 })
+
+/*Delete Request : In case of DELETE , the document gets deleted from the side */
+
+app.delete('/api/users/delete/:id' , (request , response) => {
+  const {id} = request.params;
+  const parseId = parseInt(id);
+  if(isNaN(parseId)){
+    return response.status(400).json({
+      success : false,
+      message : 'Invalid ID from the client !!'
+    })
+  }
+  const findUser = users.findIndex((user) => user.id === parseId);
+  if(findUser == -1){
+    return response.status(404).json({
+      success: false,
+      message : 'User not found !!'
+    })
+  }
+  const deletedUser = users.slice(findUser , findUser + 1) ;
+  if(deletedUser){
+    return response.status(200).json({
+      success : true ,
+      message : 'User is deleted successfully !!' ,
+      deletedUser : deletedUser
+    })
+  }
+  else{
+    return response.status(400).json({
+      success : false ,
+      message : 'Failed to delete user'
+    })
+  }
+})
+
 
 /*
 'GET' request : 1st parameter : /health => route ;  2nd Parameter : () => {} // callback function  ; (request , response) :
