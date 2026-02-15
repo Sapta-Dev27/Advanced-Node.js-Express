@@ -1,4 +1,4 @@
-import  { request } from 'express';
+import { request } from 'express';
 import express from 'express';
 const PORT = 8001
 const app = express(); // invoke the app 
@@ -6,10 +6,7 @@ const app = express(); // invoke the app
 
 app.use(express.json())
 
-//health check route
-app.get('/health', (request, response) => {
-  response.send('SERVER IS LIVE')
-})
+
 
 //users array
 const users = [
@@ -45,6 +42,46 @@ const products = [
     name: 'Iphone 17'
   },
 ]
+
+//logging middleware //
+const loggingMiddleware = (request, response, next) => {
+  const time = new Date();
+  const req_method = request.method;
+  const req_URL = request.url;
+  console.log(`Request is coming from URL => ${req_URL} via METHOD => ${req_method} at TIME : ${time.toISOString()}`);
+  next();
+}
+
+//checkingUSER ID middleware //
+const checkingUserID = (request, response, next) => {
+  const { id } = request.params;
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) {
+    return response.status(400).json({
+      success: false,
+      message: 'INVALID ID'
+    })
+  }
+  const findUserIndex = users.findIndex((user) => user.id === parsedId)
+  if (findUserIndex == -1) {
+    return response.status(404).json({
+      success: false,
+      message: 'User is not found'
+    })
+  }
+  request.findUserIndex = findUserIndex;
+  next();
+}
+
+
+//declaring global middleware
+app.use(loggingMiddleware);
+
+
+//health check route
+app.get('/health', (request, response) => {
+  response.send('SERVER IS LIVE')
+})
 
 //get : /users/email  => route
 app.get('/users/email', (request, response) => {
@@ -190,44 +227,30 @@ app.patch('/api/users/update/:id', (request, response) => {
     })
   }
   const body = request.body;
-  users[findUser] = {...users[findUser] , ...body}
+  users[findUser] = { ...users[findUser], ...body }
   return response.status(200).json({
-    success : true ,
-    message : 'Record is updated successfullly !!' ,
-    updatedUser : users[findUser]
+    success: true,
+    message: 'Record is updated successfullly !!',
+    updatedUser: users[findUser]
   })
 })
 
 /*Delete Request : In case of DELETE , the document gets deleted from the side */
 
-app.delete('/api/users/delete/:id' , (request , response) => {
-  const {id} = request.params;
-  const parseId = parseInt(id);
-  if(isNaN(parseId)){
-    return response.status(400).json({
-      success : false,
-      message : 'Invalid ID from the client !!'
-    })
-  }
-  const findUser = users.findIndex((user) => user.id === parseId);
-  if(findUser == -1){
-    return response.status(404).json({
-      success: false,
-      message : 'User not found !!'
-    })
-  }
-  const deletedUser = users.slice(findUser , findUser + 1) ;
-  if(deletedUser){
+app.delete('/api/users/delete/:id', checkingUserID, (request, response) => {
+  const findUser = request.findUserIndex;
+  const deletedUser = users.slice(findUser, findUser + 1);
+  if (deletedUser) {
     return response.status(200).json({
-      success : true ,
-      message : 'User is deleted successfully !!' ,
-      deletedUser : deletedUser
+      success: true,
+      message: 'User is deleted successfully !!',
+      deletedUser: deletedUser
     })
   }
-  else{
+  else {
     return response.status(400).json({
-      success : false ,
-      message : 'Failed to delete user'
+      success: false,
+      message: 'Failed to delete user'
     })
   }
 })
