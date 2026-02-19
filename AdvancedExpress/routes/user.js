@@ -26,6 +26,13 @@ const users = [
 const router = Router();
 
 router.get('/users/email', loggingMiddleware, (request, response) => {
+  console.log(request.cookies);
+  if( request.cookies.hello === undefined && request.cookies.hello !== "world"){
+    return response.status(403).json({
+      success : false ,
+      message : 'Invalid cookie. Your coookie had been expired'
+    })
+  }
   return response.status(200).json({
     users_list_email: users.map((x) => x.email)
   })
@@ -47,6 +54,14 @@ router.get('/users/query',
     .isLength({ max: 32, min: 3 }).withMessage('The query should be of min 3 letters and max of 32 letter'),
 
   (request, response) => {
+   
+    if(request.cookies.hello === undefined && request.cookies.hello != "world"){
+      return response.status(403).json({
+        success : false,
+        message : 'No Cookie found !!'
+      })
+    }
+
     console.log(request.query);
     const result = validationResult(request);
     console.log(result)
