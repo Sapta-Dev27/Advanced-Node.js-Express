@@ -27,15 +27,19 @@ const router = Router();
 router.get('/products', (request, response) => {
   console.log(request.headers.cookie);
   console.log(request.cookies)
+
+  console.log(request.session);
+  console.log(request.sessionID);
+  request.session.visited = true;
   if (request.cookies.hello && request.cookies.hello === "world") {
     return response.status(200).json({
       products_list: products
     })
   }
-  else{
+  else {
     return response.status(403).json({
-      success : false ,
-      message : 'Invalid Cookie Sent . Or ur cookies have been expired !!'
+      success: false,
+      message: 'Invalid Cookie Sent . Or ur cookies have been expired !!'
     })
   }
 });
@@ -48,13 +52,13 @@ router.get('/products/:id',
 
   , (request, response) => {
 
-     console.log(request.cookies)
-     if( request.cookies.hello === undefined && request.cookies.hello !== "world"){
+    console.log(request.cookies)
+    if (request.cookies.hello === undefined && request.cookies.hello !== "world") {
       return response.status(403).json({
-        success : false ,
-        message : 'Invalid Cookie. Pls provide valid Cookie !!'
+        success: false,
+        message: 'Invalid Cookie. Pls provide valid Cookie !!'
       })
-     }
+    }
     const parsedId = parseInt(request.params.id);
     if (isNaN(parsedId)) {
       return response.status(400).json({
